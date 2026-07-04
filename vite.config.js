@@ -8,7 +8,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://emosync-backend-production.up.railway.app',
         changeOrigin: true,
       },
     },
