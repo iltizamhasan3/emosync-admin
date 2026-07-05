@@ -1,7 +1,9 @@
 import client from './client'
 
 export const getContents = async (params = {}) => {
-  const res = await client.get('/admin/konten', { params })
+  const res = await client.get('/admin/konten', {
+    params: { page: 1, ...params },
+  })
   return res.data
 }
 

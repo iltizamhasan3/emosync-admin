@@ -1,45 +1,43 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { getContents, deleteContent } from '../../api/content'
 import Header from '../../components/Header'
 import { CONTENT_TYPE_LABELS } from '../../utils/constants'
-
-const typeColors = {
-  ARTIKEL: 'border-blue-500/20 bg-blue-500/10 text-blue-400',
-  VIDEO: 'border-purple-500/20 bg-purple-500/10 text-purple-400',
-  KUTIPAN: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400',
-}
 
 export default function ContentListPage() {
   const [contents, setContents] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState(null)
   const [deleteId, setDeleteId] = useState(null)
   const [deleting, setDeleting] = useState(false)
 
-  const fetchContents = async () => {
+  const fetchContents = useCallback(async (pageNum = 1) => {
     setLoading(true)
     try {
-      const params = {}
+      const params = { page: pageNum }
       if (search) params.search = search
       if (typeFilter) params.type = typeFilter
       const res = await getContents(params)
       setContents(res.data || [])
+      setPagination(res.pagination || null)
+      setPage(pageNum)
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
     }
-  }
+  }, [search, typeFilter])
 
   useEffect(() => {
-    fetchContents()
-  }, [typeFilter])
+    fetchContents(1)
+  }, [typeFilter, fetchContents])
 
   const handleSearch = (e) => {
     e.preventDefault()
-    fetchContents()
+    fetchContents(1)
   }
 
   const handleDelete = async () => {
@@ -47,7 +45,15 @@ export default function ContentListPage() {
     setDeleting(true)
     try {
       await deleteContent(deleteId)
-      setContents((prev) => prev.filter((c) => c.id !== deleteId))
+      const currentTotal = pagination?.total ?? contents.length
+      const newTotal = currentTotal - 1
+      const lastPage = Math.max(1, Math.ceil(newTotal / (pagination?.per_page || 20)))
+      if (page > lastPage) {
+        await fetchContents(lastPage)
+      } else {
+        setContents((prev) => prev.filter((c) => c.id !== deleteId))
+        setPagination((prev) => prev ? { ...prev, total: newTotal } : prev)
+      }
       setDeleteId(null)
     } catch (err) {
       console.error(err)
@@ -56,9 +62,18 @@ export default function ContentListPage() {
     }
   }
 
+  const handleDeleteKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setDeleteId(null)
+    }
+  }
+
+  const totalPages = pagination?.last_page ?? 1
+  const currentPage = pagination?.current_page ?? page
+
   return (
     <div>
-      <Header title="Kelola Konten 💿" description="Tambah, edit, atau hapus konten EmoSync" />
+      <Header title="Kelola Konten" description="Tambah, edit, atau hapus konten EmoSync" />
 
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <form onSubmit={handleSearch} className="flex flex-1 max-w-md gap-3">
@@ -67,11 +82,11 @@ export default function ContentListPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari judul..."
-            className="glass-input w-full rounded-xl px-4 py-2.5 text-sm placeholder-gray-500 outline-none"
+            className="text-input"
           />
           <button
             type="submit"
-            className="rounded-xl bg-white/5 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+            className="button-secondary"
           >
             Cari
           </button>
@@ -81,17 +96,17 @@ export default function ContentListPage() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="glass-input cursor-pointer appearance-none rounded-xl px-4 py-2.5 pr-8 text-sm outline-none"
+            className="text-input pr-8 cursor-pointer"
           >
-            <option value="" className="bg-bg-dark text-white">Semua Tipe</option>
-            <option value="ARTIKEL" className="bg-bg-dark text-white">Artikel</option>
-            <option value="VIDEO" className="bg-bg-dark text-white">Video</option>
-            <option value="KUTIPAN" className="bg-bg-dark text-white">Kutipan</option>
+            <option value="">Semua Tipe</option>
+            <option value="ARTIKEL">Artikel</option>
+            <option value="VIDEO">Video</option>
+            <option value="KUTIPAN">Kutipan</option>
           </select>
 
           <Link
             to="/contents/create"
-            className="rounded-xl bg-gradient-to-r from-primary to-secondary px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40"
+            className="button-primary whitespace-nowrap"
           >
             + Tambah
           </Link>
@@ -100,109 +115,150 @@ export default function ContentListPage() {
 
       {loading ? (
         <div className="flex min-h-[50vh] items-center justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-primary-disabled)] border-t-[var(--color-primary)]" />
         </div>
       ) : contents.length === 0 ? (
-        <div className="glass-card rounded-3xl p-16 text-center">
-          <p className="text-gray-400">Belum ada konten. Mulai buat sesuatu yang luar biasa! ✨</p>
+        <div className="feature-card text-center py-16 border border-[var(--color-hairline)]">
+          <p className="typography-body-md text-[var(--color-muted)]">Belum ada konten. Mulai buat sesuatu yang luar biasa!</p>
         </div>
       ) : (
-        <div className="glass overflow-hidden rounded-2xl border-white/5">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-white/10 bg-white/5">
-              <tr>
-                <th className="px-6 py-4 font-semibold text-gray-300">Thumbnail</th>
-                <th className="px-6 py-4 font-semibold text-gray-300">Judul</th>
-                <th className="px-6 py-4 font-semibold text-gray-300">Tipe</th>
-                <th className="px-6 py-4 font-semibold text-gray-300">Akses</th>
-                <th className="px-6 py-4 font-semibold text-gray-300">Tanggal</th>
-                <th className="px-6 py-4 font-semibold text-gray-300">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {contents.map((item) => (
-                <tr key={item.id} className="transition-colors hover:bg-white/5">
-                  <td className="px-6 py-4">
-                    {item.thumbnail_url ? (
-                      <img
-                        src={item.thumbnail_url}
-                        alt=""
-                        className="h-12 w-20 rounded-lg object-cover ring-1 ring-white/10"
-                      />
-                    ) : (
-                      <div className="flex h-12 w-20 items-center justify-center rounded-lg bg-white/5 text-xs text-gray-500 ring-1 ring-white/10">
-                        No img
+        <>
+          <div className="feature-card border border-[var(--color-hairline)] px-0 py-0 overflow-hidden">
+            <table className="w-full text-left typography-body-sm">
+              <thead className="border-b border-[var(--color-hairline)] bg-[var(--color-canvas)]">
+                <tr>
+                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Thumbnail</th>
+                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Judul</th>
+                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Tipe</th>
+                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Akses</th>
+                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Tanggal</th>
+                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)] text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-hairline)]">
+                {contents.map((item) => (
+                  <tr key={item.id} className="transition-colors hover:bg-[var(--color-surface-soft)]">
+                    <td className="px-6 py-4">
+                      {item.thumbnail_url ? (
+                        <img
+                          src={item.thumbnail_url}
+                          alt=""
+                          className="h-12 w-20 rounded-md object-cover border border-[var(--color-hairline)]"
+                        />
+                      ) : (
+                        <div className="flex h-12 w-20 items-center justify-center rounded-md bg-[var(--color-canvas)] text-[var(--color-muted-soft)] typography-caption border border-[var(--color-hairline)]">
+                          No img
+                        </div>
+                      )}
+                    </td>
+                    <td className="max-w-xs truncate px-6 py-4 font-medium text-[var(--color-ink)]">
+                      {item.title}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center rounded-full bg-[var(--color-canvas)] px-2.5 py-1 typography-caption text-[var(--color-ink)] border border-[var(--color-hairline)]">
+                        {CONTENT_TYPE_LABELS[item.type] || item.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {item.is_premium ? (
+                        <span className="inline-flex items-center rounded-full bg-[var(--color-accent-amber)]/10 px-2.5 py-1 typography-caption text-[var(--color-accent-amber)]">
+                          Premium
+                        </span>
+                      ) : (
+                        <span className="text-[var(--color-muted)]">Gratis</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-[var(--color-muted)]">
+                      {new Date(item.created_at).toLocaleDateString('id-ID')}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          to={`/contents/${item.id}/edit`}
+                          className="button-secondary px-3 py-1.5 h-auto text-[13px]"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          onClick={() => setDeleteId(item.id)}
+                          className="rounded-md border border-[var(--color-error)] text-[var(--color-error)] bg-transparent px-3 py-1.5 typography-button text-[13px] hover:bg-[var(--color-error)]/10 transition-colors"
+                        >
+                          Hapus
+                        </button>
                       </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-center gap-2">
+              <button
+                onClick={() => fetchContents(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="button-secondary px-3 py-1.5 h-auto text-[13px] disabled:opacity-40"
+              >
+                Prev
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .map((p, idx, arr) => (
+                  <span key={p} className="flex items-center">
+                    {idx > 0 && arr[idx - 1] !== p - 1 && (
+                      <span className="px-1 text-[var(--color-muted-soft)]">...</span>
                     )}
-                  </td>
-                  <td className="max-w-xs truncate px-6 py-4 font-medium text-white">
-                    {item.title}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${
-                        typeColors[item.type] || 'border-gray-500/20 bg-gray-500/10 text-gray-400'
+                    <button
+                      onClick={() => fetchContents(p)}
+                      className={`px-3 py-1.5 typography-button text-[13px] rounded-md transition-colors ${
+                        p === currentPage
+                          ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)]'
+                          : 'bg-[var(--color-canvas)] text-[var(--color-ink)] border border-[var(--color-hairline)] hover:bg-[var(--color-surface-soft)]'
                       }`}
                     >
-                      {CONTENT_TYPE_LABELS[item.type] || item.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {item.is_premium ? (
-                      <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400">
-                        Premium ✦
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">Gratis</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-gray-400">
-                    {new Date(item.created_at).toLocaleDateString('id-ID')}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <Link
-                        to={`/contents/${item.id}/edit`}
-                        className="rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary-light transition-colors hover:bg-primary/20"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => setDeleteId(item.id)}
-                        className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/20"
-                      >
-                        Hapus
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      {p}
+                    </button>
+                  </span>
+                ))}
+              <button
+                onClick={() => fetchContents(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="button-secondary px-3 py-1.5 h-auto text-[13px] disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="glass-card w-full max-w-sm rounded-3xl p-8">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-2xl text-red-400 ring-1 ring-red-500/20">
-              ⚠️
-            </div>
-            <h3 className="text-xl font-bold text-white">Hapus Konten?</h3>
-            <p className="mt-2 text-sm text-gray-400">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-ink)]/50 backdrop-blur-sm p-4"
+          onClick={() => setDeleteId(null)}
+          onKeyDown={handleDeleteKeyDown}
+          tabIndex={-1}
+        >
+          <div
+            className="feature-card w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="typography-title-lg text-[var(--color-ink)] mb-2">Hapus Konten?</h3>
+            <p className="typography-body-md text-[var(--color-muted)]">
               Yakin ingin menghapus konten ini? Tindakan ini tidak bisa dibatalkan.
             </p>
             <div className="mt-8 flex justify-end gap-3">
               <button
                 onClick={() => setDeleteId(null)}
-                className="rounded-xl bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                className="button-secondary"
               >
                 Batal
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/25 transition-all hover:bg-red-600 hover:shadow-red-500/40 disabled:opacity-50"
+                className="button-primary bg-[var(--color-error)] text-white hover:bg-[var(--color-error)]/80"
               >
                 {deleting ? 'Menghapus...' : 'Ya, Hapus'}
               </button>

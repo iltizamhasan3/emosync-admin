@@ -12,8 +12,3 @@ export const CONTENT_TYPE_LABELS = {
   KUTIPAN: 'Kutipan',
 }
 
-export const CONTENT_TYPE_COLORS = {
-  ARTIKEL: 'blue',
-  VIDEO: 'purple',
-  KUTIPAN: 'green',
-}
