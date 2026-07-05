@@ -25,7 +25,7 @@
 | 📝 **Kelola Konten** | CRUD Artikel, Video, Kutipan |
 | 🔍 **Cari & Filter** | Cari judul + filter tipe konten |
 | 📄 **Paginasi** | Navigasi halaman konten |
-| 🖼️ **Upload File** | Upload thumbnail & video ke Supabase S3 |
+| 🖼️ **Upload File** | Upload thumbnail & video |
 | ⚠️ **Error Boundary** | Tangkapan error render otomatis |
 | 🔔 **Toast Notification** | Notifikasi sukses/gagal |
 
@@ -71,7 +71,13 @@ src/
 
 <hr/>
 
-## 🚀 Running Locally
+## 🖥️ Running Locally
+
+### Prasyarat
+- Node.js >= 18
+- npm
+
+### Setup
 
 ```bash
 git clone https://github.com/iltizamhasan3/emosync-admin.git
@@ -84,49 +90,41 @@ npm run dev
 
 ### Setup Backend
 
-Dev server proxy ke Railway production secara default. Untuk local backend:
+Admin panel butuh backend API berjalan. Clone & jalankan backend lokal:
 
 ```bash
-# Set di .env.local
+git clone https://github.com/iltizamhasan3/emosync-backend.git
+cd emosync-backend
+
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed --class=PemicuSeeder
+php artisan serve
+# API aktif di http://localhost:8000/api
+```
+
+Buat file `.env.local` di folder admin:
+
+```bash
 VITE_API_URL=http://localhost:8000/api
 ```
 
-<hr/>
-
-## 📦 Build & Deploy
+### Build Produksi
 
 ```bash
-npm run build     # Build ke dist/
-npm run preview   # Preview build
-npm run lint      # Oxlint check
+npm run build       # Build ke dist/
+npm run preview     # Preview build lokal
+npm run lint        # Oxlint check
 ```
-
-### Railway
-
-Project otomatis terdeploy via Railway dengan static site hosting.
-
-<hr/>
-
-## 🔌 API Endpoints (Admin)
-
-| Endpoint | Method | Deskripsi |
-|----------|--------|-----------|
-| `/admin/login` | `POST` | Login admin |
-| `/admin/me` | `GET` | Profil admin |
-| `/admin/dashboard` | `GET` | Statistik konten |
-| `/admin/konten` | `GET` | Daftar konten (paginated) |
-| `/admin/konten` | `POST` | Buat konten baru |
-| `/admin/konten/{id}` | `GET` | Detail konten |
-| `/admin/konten/{id}` | `PUT`/`POST` | Update konten |
-| `/admin/konten/{id}` | `DELETE` | Hapus konten |
-| `/admin/konten/upload` | `POST` | Upload file |
 
 <hr/>
 
 <div align="center">
   <p>Bagian dari ekosistem EmoSync — mood tracking & mental health app</p>
   <p>
-    <a href="https://github.com/iltizamhasan3/emosync">Flutter App</a> •
+    <a href="https://github.com/iltizamhasan3/emosync">Frontend (Flutter)</a> •
     <a href="https://github.com/iltizamhasan3/emosync-backend">Backend API</a> •
     <a href="https://github.com/iltizamhasan3/emosync-admin">Admin Panel</a>
   </p>
