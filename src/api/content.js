@@ -18,7 +18,7 @@ export const createContent = async (data) => {
 }
 
 export const updateContent = async (id, data) => {
-  const res = await client.post(`/admin/konten/${id}`, data, {
+  const res = await client.put(`/admin/konten/${id}`, data, {
     headers: { 'Content-Type': 'application/json' },
   })
   return res.data
