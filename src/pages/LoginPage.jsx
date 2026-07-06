@@ -31,8 +31,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6 bg-[var(--color-canvas)]">
-      <div className="w-full max-w-md feature-card shadow-sm border border-[var(--color-hairline)]">
+    <div className="flex w-full min-h-screen items-center justify-center p-6 bg-[var(--color-canvas)]">
+      <div className="w-full max-w-[448px] min-w-[320px] sm:min-w-[400px] feature-card shadow-sm border border-[var(--color-hairline)] mx-auto">
         <div className="mb-10 text-center">
           <img 
             src="/app_icon.jpg" 
@@ -40,21 +40,21 @@ export default function LoginPage() {
             className="mx-auto mb-6 rounded-2xl object-cover shadow-sm border border-[var(--color-hairline)]"
             style={{ width: '96px', height: '96px' }}
           />
-          <h1 className="mb-3 typography-display-md">
+          <h1 className="mb-3 typography-heading-1">
             EmoSync Admin
           </h1>
-          <p className="typography-body-md text-[var(--color-muted)]">Masuk untuk mengelola konten</p>
+          <p className="typography-body-md text-[var(--color-ink-muted)]">Masuk untuk mengelola konten</p>
         </div>
 
         {error && (
-          <div className="mb-6 rounded-md border border-[var(--color-error)] bg-[var(--color-error)]/10 p-4 typography-body-sm text-[var(--color-error)]">
+          <div className="mb-6 rounded-md border border-[var(--color-accent-orange)] bg-[var(--color-accent-orange)]/10 p-4 typography-body-sm text-[var(--color-accent-orange-deep)]">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-8">
           <div className="mb-6">
-            <label className="mb-2 block typography-title-sm text-[var(--color-ink)]">
+            <label className="mb-2 block typography-button text-[var(--color-ink)]">
               Email
             </label>
             <input
@@ -68,7 +68,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-6">
-            <label className="mb-2 block typography-title-sm text-[var(--color-ink)]">
+            <label className="mb-2 block typography-button text-[var(--color-ink)]">
               Password
             </label>
             <input
