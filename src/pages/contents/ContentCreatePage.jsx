@@ -8,7 +8,7 @@ export default function ContentCreatePage() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [uploading, setUploading] = useState({ thumbnail: false, video: false })
+  const [uploading, setUploading] = useState({ thumbnail: false })
 
   const [form, setForm] = useState({
     title: '',
@@ -75,7 +75,12 @@ export default function ContentCreatePage() {
     setLoading(true)
 
     try {
-      await createContent(form)
+      const payload = {
+        ...form,
+        full_content: form.type === 'VIDEO' && !form.full_content ? form.description : form.full_content,
+      }
+
+      await createContent(payload)
       navigate('/contents')
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal menyimpan konten.')
@@ -89,7 +94,7 @@ export default function ContentCreatePage() {
       <Header title="Tambah Konten" description="Buat konten baru untuk EmoSync" />
 
       {error && (
-        <div           className="mb-4 rounded-md border border-[var(--color-error)] bg-[var(--color-error)]/10 p-4 typography-body-sm text-[var(--color-error)]">
+        <div className="mb-4 rounded-md border border-[var(--color-accent-orange)] bg-[var(--color-accent-orange)]/10 p-4 typography-body-sm text-[var(--color-accent-orange-deep)]">
           {error}
         </div>
       )}
@@ -97,7 +102,7 @@ export default function ContentCreatePage() {
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
         <div className="feature-card border border-[var(--color-hairline)] space-y-6">
           <div>
-            <label className="mb-2 block typography-title-sm text-[var(--color-ink)]">Tipe Konten</label>
+            <label className="mb-2 block typography-button text-[var(--color-ink)]">Tipe Konten</label>
             <select
               value={form.type}
               onChange={(e) => updateField('type', e.target.value)}
@@ -110,7 +115,7 @@ export default function ContentCreatePage() {
           </div>
 
           <div>
-            <label className="mb-2 block typography-title-sm text-[var(--color-ink)]">Judul</label>
+            <label className="mb-2 block typography-button text-[var(--color-ink)]">Judul</label>
             <input
               type="text"
               value={form.title}
@@ -122,7 +127,7 @@ export default function ContentCreatePage() {
           </div>
 
           <div>
-            <label className="mb-2 block typography-title-sm text-[var(--color-ink)]">Deskripsi</label>
+            <label className="mb-2 block typography-button text-[var(--color-ink)]">Deskripsi</label>
             <textarea
               value={form.description}
               onChange={(e) => updateField('description', e.target.value)}
@@ -134,7 +139,7 @@ export default function ContentCreatePage() {
 
           {(form.type === 'ARTIKEL' || form.type === 'KUTIPAN') && (
             <div>
-              <label className="mb-2 block typography-title-sm text-[var(--color-ink)]">
+              <label className="mb-2 block typography-button text-[var(--color-ink)]">
                 {form.type === 'KUTIPAN' ? 'Kutipan' : 'Konten Lengkap'}
               </label>
               <textarea
@@ -152,7 +157,7 @@ export default function ContentCreatePage() {
           )}
 
           <div>
-            <label className="mb-2 block typography-title-sm text-[var(--color-ink)]">Thumbnail</label>
+            <label className="mb-2 block typography-button text-[var(--color-ink)]">Thumbnail</label>
             <div className="flex items-center gap-3">
               <input
                 type="file"
@@ -175,21 +180,14 @@ export default function ContentCreatePage() {
 
           {form.type === 'VIDEO' && (
             <div>
-              <label className="mb-2 block typography-title-sm text-[var(--color-ink)]">File Video</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="file"
-                  accept="video/*"
-                  onChange={(e) => handleFileUpload(e, 'video_url', 'video')}
-                  className="w-full typography-body-sm file:mr-3 file:rounded-md file:border-0 file:bg-[var(--color-surface-soft)] file:px-3 file:py-1 file:typography-caption file:text-[var(--color-ink)] file:cursor-pointer cursor-pointer"
-                />
-                {uploading.video && (
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--color-primary-disabled)] border-t-[var(--color-primary)]" />
-                )}
-              </div>
-              {form.video_url && (
-                <p className="mt-2 typography-caption text-[var(--color-success)]">✓ Video terupload</p>
-              )}
+              <label className="mb-2 block typography-button text-[var(--color-ink)]">URL YouTube</label>
+              <input
+                type="url"
+                value={form.video_url}
+                onChange={(e) => updateField('video_url', e.target.value)}
+                className="text-input"
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
             </div>
           )}
 
