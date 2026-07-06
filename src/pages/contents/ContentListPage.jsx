@@ -119,20 +119,20 @@ export default function ContentListPage() {
         </div>
       ) : contents.length === 0 ? (
         <div className="feature-card text-center py-16 border border-[var(--color-hairline)]">
-          <p className="typography-body-md text-[var(--color-muted)]">Belum ada konten. Mulai buat sesuatu yang luar biasa!</p>
+          <p className="typography-body-md text-[var(--color-ink-muted)]">Belum ada konten. Mulai buat sesuatu yang luar biasa!</p>
         </div>
       ) : (
         <>
           <div className="feature-card border border-[var(--color-hairline)] px-0 py-0 overflow-hidden">
             <table className="w-full text-left typography-body-sm">
-              <thead className="border-b border-[var(--color-hairline)] bg-[var(--color-canvas)]">
+              <thead className="border-b border-[var(--color-hairline)] bg-[var(--color-canvas-soft)]">
                 <tr>
-                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Thumbnail</th>
-                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Judul</th>
-                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Tipe</th>
-                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Akses</th>
-                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)]">Tanggal</th>
-                  <th className="px-6 py-4 font-semibold text-[var(--color-muted)] text-right">Aksi</th>
+                  <th className="px-6 py-4 typography-eyebrow text-[var(--color-ink-muted)]">Thumbnail</th>
+                  <th className="px-6 py-4 typography-eyebrow text-[var(--color-ink-muted)]">Judul</th>
+                  <th className="px-6 py-4 typography-eyebrow text-[var(--color-ink-muted)]">Tipe</th>
+                  <th className="px-6 py-4 typography-eyebrow text-[var(--color-ink-muted)]">Akses</th>
+                  <th className="px-6 py-4 typography-eyebrow text-[var(--color-ink-muted)]">Tanggal</th>
+                  <th className="px-6 py-4 typography-eyebrow text-[var(--color-ink-muted)] text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-hairline)]">
@@ -146,7 +146,7 @@ export default function ContentListPage() {
                           className="h-12 w-20 rounded-md object-cover border border-[var(--color-hairline)]"
                         />
                       ) : (
-                        <div className="flex h-12 w-20 items-center justify-center rounded-md bg-[var(--color-canvas)] text-[var(--color-muted-soft)] typography-caption border border-[var(--color-hairline)]">
+                        <div className="flex h-12 w-20 items-center justify-center rounded-md bg-[var(--color-canvas)] text-[var(--color-ink-muted)] typography-caption border border-[var(--color-hairline)]">
                           No img
                         </div>
                       )}
@@ -161,14 +161,14 @@ export default function ContentListPage() {
                     </td>
                     <td className="px-6 py-4">
                       {item.is_premium ? (
-                        <span className="inline-flex items-center rounded-full bg-[var(--color-accent-amber)]/10 px-2.5 py-1 typography-caption text-[var(--color-accent-amber)]">
+                        <span className="inline-flex items-center rounded-full bg-[var(--color-accent-purple)]/10 px-2.5 py-1 typography-caption text-[var(--color-accent-purple-deep)]">
                           Premium
                         </span>
                       ) : (
-                        <span className="text-[var(--color-muted)]">Gratis</span>
+                        <span className="text-[var(--color-ink-muted)]">Gratis</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-[var(--color-muted)]">
+                    <td className="px-6 py-4 text-[var(--color-ink-muted)]">
                       {new Date(item.created_at).toLocaleDateString('id-ID')}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -181,7 +181,7 @@ export default function ContentListPage() {
                         </Link>
                         <button
                           onClick={() => setDeleteId(item.id)}
-                          className="rounded-md border border-[var(--color-error)] text-[var(--color-error)] bg-transparent px-3 py-1.5 typography-button text-[13px] hover:bg-[var(--color-error)]/10 transition-colors"
+                          className="rounded-md border border-[var(--color-accent-orange)] text-[var(--color-accent-orange-deep)] bg-transparent px-3 py-1.5 typography-button text-[13px] hover:bg-[var(--color-accent-orange)]/10 transition-colors"
                         >
                           Hapus
                         </button>
@@ -207,7 +207,7 @@ export default function ContentListPage() {
                 .map((p, idx, arr) => (
                   <span key={p} className="flex items-center">
                     {idx > 0 && arr[idx - 1] !== p - 1 && (
-                      <span className="px-1 text-[var(--color-muted-soft)]">...</span>
+                      <span className="px-1 text-[var(--color-ink-faint)]">...</span>
                     )}
                     <button
                       onClick={() => fetchContents(p)}
@@ -241,14 +241,14 @@ export default function ContentListPage() {
           tabIndex={-1}
         >
           <div
-            className="feature-card w-full max-w-sm"
+            className="feature-card w-[90%] max-w-[400px] min-w-[320px]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="typography-title-lg text-[var(--color-ink)] mb-2">Hapus Konten?</h3>
-            <p className="typography-body-md text-[var(--color-muted)]">
+            <h3 className="typography-heading-2 text-[var(--color-ink)] mb-2">Hapus Konten?</h3>
+            <p className="typography-body-md text-[var(--color-ink-muted)]">
               Yakin ingin menghapus konten ini? Tindakan ini tidak bisa dibatalkan.
             </p>
-            <div className="mt-8 flex justify-end gap-3">
+            <div className="mt-8 flex justify-around sm:justify-end gap-3 flex-wrap">
               <button
                 onClick={() => setDeleteId(null)}
                 className="button-secondary"
@@ -258,7 +258,7 @@ export default function ContentListPage() {
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="button-primary bg-[var(--color-error)] text-white hover:bg-[var(--color-error)]/80"
+                className="button-primary !bg-[var(--color-accent-orange)] !text-[var(--color-on-primary)] hover:opacity-80"
               >
                 {deleting ? 'Menghapus...' : 'Ya, Hapus'}
               </button>
